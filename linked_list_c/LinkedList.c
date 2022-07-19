@@ -5,6 +5,12 @@
 
 
 
+struct Node {
+    void *data;
+    struct Node *next;
+};
+
+
 Node *initNode(unsigned long long data_size, void *data, int data_count);
 void freeNode(Node *node);
 Node *iterateNode(LinkedList *list, int index);
