@@ -9,17 +9,19 @@ struct Node {
     struct Node *prev;
     struct Node *next;
     void *data;
+    int data_count;
 };
 
 
-Node *initNode(unsigned data_size, void *new_data, int data_count);
+Node *initNode(const unsigned data_size, const void *new_data,
+        const int data_count);
 void freeNode(Node *node);
-Node *iterateNode(DLinkedList *dlist, int index);
+Node *iterateNode(const DLinkedList *dlist, const int index);
 
 
 
 //  DList Functions
-DLinkedList DLinkedList_Constructor(unsigned data_size) {
+DLinkedList DLinkedList_Constructor(const unsigned data_size) {
     DLinkedList new_list;
     new_list.head = NULL;
     new_list.tail = NULL;
@@ -52,7 +54,8 @@ void DLinkedList_Destructor(DLinkedList *dlist) {
 }
 
 
-void insert_DLL(DLinkedList *dlist, int index, void *new_data, int data_count) {
+void insert_DLL(DLinkedList *dlist, const int index,
+        const void *new_data, const int data_count) {
     Node *node_to_insert = initNode(dlist->data_size, new_data, data_count);
 
     if (index == 0) {
@@ -76,7 +79,7 @@ void insert_DLL(DLinkedList *dlist, int index, void *new_data, int data_count) {
     ++(dlist->length);
 }
 
-void erase_DLL(DLinkedList *dlist, int index) {
+void erase_DLL(DLinkedList *dlist, const int index) {
     Node *node_to_erase = NULL;
 
     if (index == 0) {
@@ -103,16 +106,18 @@ void erase_DLL(DLinkedList *dlist, int index) {
     --(dlist->length);
 }
 
-void *retrieve_DLL(DLinkedList *dlist, int index) {
+void *retrieve_DLL(const DLinkedList *dlist, const int index) {
     return iterateNode(dlist, index)->data;
 }
 
 
-void pushBack_DLL(DLinkedList *dlist, void *new_data, int data_count) {
+void pushBack_DLL(DLinkedList *dlist,
+        const void *new_data, const int data_count) {
     insert_DLL(dlist, dlist->length, new_data, data_count);
 }
 
-void pushFront_DLL(DLinkedList *dlist, void *new_data, int data_count) {
+void pushFront_DLL(DLinkedList *dlist,
+        const void *new_data, const int data_count) {
     insert_DLL(dlist, 0, new_data, data_count);
 }
 
@@ -134,11 +139,11 @@ void popFront_DLL(DLinkedList *dlist) {
     } \
     printf("NULL\n"); \
 
-void printDListIntF(DLinkedList *dlist) { // todo print backwards
+void printDListIntF(const DLinkedList *dlist) {
     printListF(dlist, *(int*), "%d->");
 }
 
-void printDListStringF(DLinkedList *dlist) {
+void printDListStringF(const DLinkedList *dlist) {
     printListF(dlist, (char*), "%s->");
 }
 
@@ -151,11 +156,11 @@ void printDListStringF(DLinkedList *dlist) {
     } \
     printf("NULL\n"); \
 
-void printDListIntB(DLinkedList *dlist) {
+void printDListIntB(const DLinkedList *dlist) {
     printListB(dlist, *(int*), "%d->");
 }
 
-void printDListStringB(DLinkedList *dlist) {
+void printDListStringB(const DLinkedList *dlist) {
     printListB(dlist, (char*), "%s->");
 }
 
@@ -182,15 +187,72 @@ void insertionSort_DLL(DLinkedList *dlist,
     }
 }
 
+void sortedInsert_DLL(DLinkedList *dlist,
+        const void *new_data, const int data_count,
+        int (*compare)(const void *lhs, const void *rhs)) {
+    Node *cursor = dlist->head;
+    int index = 0;
+
+    while (cursor != NULL) {
+        if (compare(new_data, cursor->data) >= 0) {
+            insert_DLL(dlist, index, new_data, data_count);
+            return;
+        }
+        cursor = cursor->next;
+        ++index;
+    }
+
+    pushBack_DLL(dlist, new_data, data_count);
+}
+
+int binarySearch_DLL(const DLinkedList *dlist,
+        const int left, const int right, const void *data_to_find,
+        int (*compare)(const void *lhs, const void *rhs)) {
+    if (left <= right) {
+        int mid = left + (right - left) / 2;
+        void *value_mid = retrieve_DLL(dlist, mid);
+
+        if (compare(value_mid, data_to_find) == 0)
+            return mid;
+
+        if (compare(value_mid, data_to_find) < 0)
+            return binarySearch_DLL(dlist, left, mid - 1, data_to_find, compare);
+
+        return binarySearch_DLL(dlist, mid + 1, right, data_to_find, compare);
+    }
+    return -1;
+}
+
+
+void Copy_DLL_F(DLinkedList *dlist_dst,
+        const DLinkedList *dlist_src) {
+    Node *src_cursor = dlist_src->head;
+    while (src_cursor != NULL) {
+        pushBack_DLL(dlist_dst, src_cursor->data, src_cursor->data_count);
+        src_cursor = src_cursor->next;
+    }
+}
+
+void Copy_DLL_B(DLinkedList *dlist_dst,
+        const DLinkedList *dlist_src) {
+    Node *src_cursor = dlist_src->tail;
+    while (src_cursor != NULL) {
+        pushBack_DLL(dlist_dst, src_cursor->data, src_cursor->data_count);
+        src_cursor = src_cursor->prev;
+    }
+}
+
 
 
 //  Node Functions
-Node *initNode(unsigned data_size, void *new_data, int data_count) {
+Node *initNode(const unsigned data_size, const void *new_data,
+        const int data_count) {
     Node *new_node = (Node*)malloc(sizeof(Node));
     new_node->data = malloc(data_size * data_count);
     memmove(new_node->data, new_data, data_size * data_count);
     new_node->next = NULL;
     new_node->prev = NULL;
+    new_node->data_count = data_count;
 
     return new_node;
 }
@@ -200,7 +262,7 @@ void freeNode(Node *node) {
     free(node);
 }
 
-Node *iterateNode(DLinkedList *dlist, int index) {
+Node *iterateNode(const DLinkedList *dlist, const int index) {
     Node *cursor = NULL;
 
     if (index < dlist->length / 2) {

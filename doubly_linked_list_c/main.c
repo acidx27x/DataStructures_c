@@ -12,8 +12,7 @@ int compareInt(const void *lhs, const void *rhs) {
 }
 
 
-
-int main(void) {
+int func1(void) {
     DLinkedList dlist_int = DLinkedList_Constructor(sizeof(int));
 
     srand(time(NULL));
@@ -62,6 +61,34 @@ int main(void) {
     printDListIntB(&dlist_int);
 
     DLinkedList_Destructor(&dlist_int);
+    return 0;
+}
+
+
+int main() {
+    srand(time(NULL));
+
+    DLinkedList frst = DLinkedList_Constructor(sizeof(int));
+    for (int i = 0; i < 15; ++i) {
+        int num = rand() % 228;
+        printf("%d ", num);
+        sortedInsert_DLL(&frst, &num, 1, compareInt);
+    }
+    putchar('\n');
+
+    DLinkedList scnd = DLinkedList_Constructor(sizeof(int));
+    Copy_DLL_F(&scnd, &frst);
+    erase_DLL(&frst, 3);
+    erase_DLL(&frst, 5);
+
+    printDListIntF(&frst);
+    printDListIntF(&scnd);
+
+    int find = *(int*)retrieve_DLL(&scnd, 5);
+    printf("to find on 5th place ==%d==\n", find);
+    printf("length ==%d==\n", scnd.length);
+    printf("==%d==\n", binarySearch_DLL(&scnd, 0, scnd.length - 1, &find, compareInt));
+
     return 0;
 }
 
