@@ -146,7 +146,7 @@ int binarySearchList(LinkedList *list, int left, int right,
         if (compare(value_mid, data_to_find) < 0)
             return binarySearchList(list, left, mid - 1, data_to_find, compare);
 
-        return binarySearchList(list, mid + 1,right, data_to_find, compare);
+        return binarySearchList(list, mid + 1, right, data_to_find, compare);
     }
 
     return -1;
